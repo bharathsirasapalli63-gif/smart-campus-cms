@@ -1,0 +1,13 @@
+# Exclude personal sensitive documents & images
+*.pdf
+*.jpg
+*.jpeg
+*.png
+
+# OS generated files
+.DS_Store
+Thumbs.db
+*.log
+
+# Scratch / temp
+scratch/

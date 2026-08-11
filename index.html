@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Campus Complaint Management System | CampusCare AI</title>
+  <meta name="description" content="AI-powered university and B.Tech engineering college complaint reporting, smart auto-routing, duplicate detection, and campus issue resolution portal.">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- ==========================================================================
+       CAMPUS AUTHENTICATION / LOGIN PORTAL
+       ========================================================================== -->
+  <div id="login-screen-container" class="login-screen-wrapper">
+    <div class="login-bg-orb orb-1"></div>
+    <div class="login-bg-orb orb-2"></div>
+
+    <div class="login-auth-card">
+      <div class="login-brand-header">
+        <div class="login-logo-badge">⚡</div>
+        <h2>CampusCare AI</h2>
+        <p>Smart Campus Complaint & Issue Management Portal</p>
+      </div>
+
+      <!-- Role Selector Tabs -->
+      <div class="login-role-tabs">
+        <button type="button" class="login-tab-btn active" id="tab-student-login" onclick="switchLoginTab('student')">
+          👨‍🎓 Student Login
+        </button>
+        <button type="button" class="login-tab-btn" id="tab-staff-login" onclick="switchLoginTab('staff')">
+          🛠️ Staff / Admin Login
+        </button>
+      </div>
+
+      <!-- Error Alert Box -->
+      <div class="login-error-alert" id="login-error-msg" style="display: none;">
+        <span>⚠️ Invalid Credentials. Please check Roll Number and Password.</span>
+      </div>
+
+      <!-- Login Form -->
+      <form id="login-form" onsubmit="handleLoginSubmit(event)">
+        
+        <!-- Field 1: Roll No / ID -->
+        <div class="login-input-group">
+          <label for="login-id-input" id="login-id-label">Student Roll Number *</label>
+          <div class="input-with-icon">
+            <span class="input-icon" id="login-id-icon">🎓</span>
+            <input type="text" id="login-id-input" class="login-control" placeholder="e.g. 22B91A0584" required>
+          </div>
+        </div>
+
+        <!-- Field 2: Password -->
+        <div class="login-input-group">
+          <label for="login-pass-input">Password *</label>
+          <div class="input-with-icon">
+            <span class="input-icon">🔐</span>
+            <input type="password" id="login-pass-input" class="login-control" placeholder="Enter given campus password" required>
+            <button type="button" class="toggle-pass-btn" onclick="togglePasswordVisibility()">👁️</button>
+          </div>
+        </div>
+
+        <div class="login-extra-row">
+          <label class="remember-checkbox-label">
+            <input type="checkbox" checked> Remember session
+          </label>
+          <a href="#" onclick="showToast('ℹ️ Contact Hostel Warden or IT Helpdesk for password reset.')" class="forgot-pass-link">Forgot Password?</a>
+        </div>
+
+        <button type="submit" class="btn-login-submit" id="btn-login-text">
+          Sign In to Campus Portal →
+        </button>
+      </form>
+
+      <!-- Quick Demo Auto-Fill Shortcuts -->
+      <div class="demo-autofill-box">
+        <span class="autofill-title">🔑 Quick Demo Credentials (Click to Auto-fill):</span>
+        <div class="autofill-btn-group">
+          <button type="button" class="chip-autofill student" onclick="fillDemoStudent()">
+            ⚡ Student (Roll: 22B91A0584 | Pass: student123)
+          </button>
+          <button type="button" class="chip-autofill staff" onclick="fillDemoStaff()">
+            🛠️ Staff (ID: ADMIN-7702 | Pass: admin123)
+          </button>
+        </div>
+      </div>
+
+      <div class="login-security-footer">
+        🛡️ Protected by Campus Identity & Access Management (IAM) System
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MAIN DASHBOARD APPLICATION CONTAINER (LOCKED UNTIL LOGIN)
+       ========================================================================== -->
+  <div class="app-container" id="main-app-container" style="display: none;">
+
+    <!-- SIDEBAR NAVIGATION -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo-badge">⚡</div>
+        <div class="logo-text">
+          <h1>CampusCare</h1>
+          <span>Smart CMS AI</span>
+        </div>
+      </div>
+
+      <div class="nav-section-label">Navigation Views</div>
+      <ul class="nav-menu">
+        <li>
+          <button class="nav-item-btn active" onclick="switchView('student-dashboard', this)" id="nav-student-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            <span>Student Portal</span>
+          </button>
+        </li>
+        <li>
+          <button class="nav-item-btn" onclick="openNewIssueModal()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+            <span>Report New Issue</span>
+          </button>
+        </li>
+        <li>
+          <button class="nav-item-btn" onclick="switchView('admin-dashboard', this)" id="nav-admin-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg>
+            <span>Staff Kanban</span>
+            <span class="badge-counter urgent" id="sidebar-urgent-count">2</span>
+          </button>
+        </li>
+        <li>
+          <button class="nav-item-btn" onclick="switchView('analytics-page', this)" id="nav-analytics-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+            <span>Analytics & Insights</span>
+          </button>
+        </li>
+      </ul>
+
+      <div class="sidebar-footer">
+        <div class="user-profile-widget" onclick="openStudentProfileModal()" style="cursor: pointer;" title="Click to view full student details">
+          <div class="avatar-circle">RS</div>
+          <div class="user-details">
+            <span class="user-name" id="user-name-display">Rahul Sharma</span>
+            <span class="user-role" id="user-role-display">B.Tech CSE (3rd Yr)</span>
+          </div>
+        </div>
+        <button class="theme-toggle-icon-btn" onclick="toggleAppTheme()" title="Toggle Dark/Light Mode">
+          <span id="theme-toggle-icon">🌙</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="main-content">
+      
+      <!-- TOP HEADER NAVBAR -->
+      <header class="top-header">
+        <div class="header-left">
+          <div class="header-title-box">
+            <h2 id="page-title-heading">Student Portal</h2>
+            <span class="header-subtitle" id="page-subtitle-text">Track, report, and manage campus infrastructure complaints</span>
+          </div>
+        </div>
+
+        <div class="header-right">
+          <!-- Quick Persona Role Switcher -->
+          <div class="role-switcher-capsule">
+            <button class="role-btn active" id="role-btn-student" onclick="setRolePerspective('student')">👨‍🎓 Student View</button>
+            <button class="role-btn" id="role-btn-staff" onclick="setRolePerspective('staff')">🛠️ Staff/Admin View</button>
+          </div>
+
+          <button class="btn-icon-relative" title="Notifications" onclick="showToast('🔔 You have 2 active updates on your complaints.')">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            <span class="notification-dot"></span>
+          </button>
+
+          <button class="btn-cta-primary" onclick="openNewIssueModal()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Report New Issue
+          </button>
+
+          <button class="btn-logout-header" onclick="logoutUser()" title="Logout from Campus Portal">
+            🚪 Logout
+          </button>
+        </div>
+      </header>
+
+      <!-- VIEWS WRAPPER -->
+      <div class="views-wrapper">
+
+        <!-- ==========================================
+             PAGE 1: STUDENT DASHBOARD
+             ========================================== -->
+        <section id="student-dashboard" class="page-view active-view">
+          
+          <!-- Active Complaint Live Progress Widget -->
+          <div class="active-tracker-card">
+            <div class="tracker-header">
+              <div class="tracker-title-box">
+                <span class="live-pulse-dot"></span>
+                <h3>Active Issue Real-Time Status</h3>
+                <span class="tracker-id-chip" id="active-tracker-id">#CMP-1092</span>
+              </div>
+              <span class="badge-chip status-progress" id="active-tracker-status-chip">⚡ In Progress</span>
+            </div>
+
+            <!-- Horizontal Timeline Tracker -->
+            <div class="timeline-tracker-wrapper">
+              <div class="timeline-steps">
+                <div class="timeline-progress-fill" id="timeline-progress-line" style="width: 66%;"></div>
+                
+                <div class="timeline-step completed" id="step-1">
+                  <div class="step-icon-circle">✓</div>
+                  <div class="step-label">Submitted</div>
+                  <div class="step-time">Today, 09:15 AM</div>
+                </div>
+
+                <div class="timeline-step completed" id="step-2">
+                  <div class="step-icon-circle">✓</div>
+                  <div class="step-label">Under Review</div>
+                  <div class="step-time">Today, 09:30 AM</div>
+                </div>
+
+                <div class="timeline-step active" id="step-3">
+                  <div class="step-icon-circle">⚡</div>
+                  <div class="step-label">In Progress</div>
+                  <div class="step-time">Today, 10:10 AM</div>
+                </div>
+
+                <div class="timeline-step" id="step-4">
+                  <div class="step-icon-circle">4</div>
+                  <div class="step-label">Resolved</div>
+                  <div class="step-time">Est. 02:00 PM</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Active Issue Metadata Summary -->
+            <div class="tracker-meta-grid">
+              <div class="meta-item">
+                <span class="meta-label">Subject & Location</span>
+                <span class="meta-value" id="active-tracker-subject">Wi-Fi Disruption in Hostel Block B (3rd Floor)</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">Assigned Department</span>
+                <span class="meta-value" id="active-tracker-dept">🌐 Network & IT Infrastructure</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">Assigned Technician</span>
+                <span class="meta-value" id="active-tracker-tech">K. Suresh (Sr. Network Admin)</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">Est. Resolution Time</span>
+                <span class="meta-value text-success" id="active-tracker-eta">⏱️ 2 Hours Remaining</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Past Complaints History Section Header -->
+          <div class="section-header-flex">
+            <div>
+              <h3>Complaints History & Tracking</h3>
+              <p style="font-size: 0.8rem; color: var(--text-muted);">View all reported issues, check status updates, or upvote existing complaints</p>
+            </div>
+
+            <div class="filter-controls-group">
+              <div class="search-input-wrapper">
+                <svg class="search-icon-inside" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="text" id="student-search-input" placeholder="Search by ID, keyword..." onkeyup="filterStudentTable()">
+              </div>
+
+              <select class="select-dropdown" id="student-category-filter" onchange="filterStudentTable()">
+                <option value="ALL">All Categories</option>
+                <option value="IT/Wi-Fi">IT / Wi-Fi</option>
+                <option value="Electrical">Electrical</option>
+                <option value="Plumbing">Plumbing & Washrooms</option>
+                <option value="Infrastructure">Infrastructure</option>
+                <option value="Transport">Transport</option>
+              </select>
+
+              <select class="select-dropdown" id="student-status-filter" onchange="filterStudentTable()">
+                <option value="ALL">All Statuses</option>
+                <option value="Submitted">Submitted</option>
+                <option value="Under Review">Under Review</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Resolved">Resolved</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- History Data Table -->
+          <div class="table-card-container">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>ID & Date</th>
+                  <th>Category</th>
+                  <th>Subject & Location</th>
+                  <th>Urgency</th>
+                  <th>Status</th>
+                  <th>Upvotes</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="student-table-body">
+                <!-- Dynamically Populated by app.js -->
+              </tbody>
+            </table>
+          </div>
+
+        </section>
+
+        <!-- ==========================================
+             PAGE 2: ADMIN / DEPARTMENT KANBAN DASHBOARD
+             ========================================== -->
+        <section id="admin-dashboard" class="page-view">
+
+          <!-- Overview Metrics Cards Grid -->
+          <div class="metrics-overview-grid">
+            <div class="metric-card">
+              <div class="metric-info">
+                <h4>Total Open Complaints</h4>
+                <div class="metric-value-box">
+                  <span class="metric-number" id="metric-total-open">18</span>
+                  <span class="metric-trend down">↓ 12%</span>
+                </div>
+              </div>
+              <div class="metric-icon-box blue">📂</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-info">
+                <h4>Urgent / High Priority</h4>
+                <div class="metric-value-box">
+                  <span class="metric-number text-danger" id="metric-urgent-count">3</span>
+                  <span class="metric-trend up">Action Req.</span>
+                </div>
+              </div>
+              <div class="metric-icon-box red">🚨</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-info">
+                <h4>Avg. Resolution Time</h4>
+                <div class="metric-value-box">
+                  <span class="metric-number" id="metric-avg-time">3.8 hrs</span>
+                  <span class="metric-trend up">⚡ Faster</span>
+                </div>
+              </div>
+              <div class="metric-icon-box amber">⏱️</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-info">
+                <h4>SLA Compliance Rate</h4>
+                <div class="metric-value-box">
+                  <span class="metric-number text-success" id="metric-sla">95.4%</span>
+                  <span class="metric-trend up">Target Met</span>
+                </div>
+              </div>
+              <div class="metric-icon-box green">🎯</div>
+            </div>
+          </div>
+
+          <!-- Department Route Filters -->
+          <div class="dept-filter-chips">
+            <button class="chip-btn active" onclick="filterKanbanDept('ALL', this)">All Departments</button>
+            <button class="chip-btn" onclick="filterKanbanDept('IT/Wi-Fi', this)">🌐 IT & Network</button>
+            <button class="chip-btn" onclick="filterKanbanDept('Electrical', this)">⚡ Electrical</button>
+            <button class="chip-btn" onclick="filterKanbanDept('Plumbing', this)">🚰 Plumbing</button>
+            <button class="chip-btn" onclick="filterKanbanDept('Infrastructure', this)">🏢 Civil / Infra</button>
+            <button class="chip-btn" onclick="filterKanbanDept('Transport', this)">🚌 Transport</button>
+          </div>
+
+          <!-- Kanban Board 4 Columns -->
+          <div class="kanban-board-grid">
+            
+            <!-- Column 1: Submitted -->
+            <div class="kanban-column" id="col-submitted">
+              <div class="kanban-column-header">
+                <div class="column-title-box">
+                  <span class="column-dot submitted"></span>
+                  <h4>Submitted</h4>
+                </div>
+                <span class="column-count-badge" id="count-submitted">0</span>
+              </div>
+              <div class="kanban-cards-wrapper" id="cards-submitted"></div>
+            </div>
+
+            <!-- Column 2: Under Review -->
+            <div class="kanban-column" id="col-review">
+              <div class="kanban-column-header">
+                <div class="column-title-box">
+                  <span class="column-dot review"></span>
+                  <h4>Under Review</h4>
+                </div>
+                <span class="column-count-badge" id="count-review">0</span>
+              </div>
+              <div class="kanban-cards-wrapper" id="cards-review"></div>
+            </div>
+
+            <!-- Column 3: In Progress -->
+            <div class="kanban-column" id="col-progress">
+              <div class="kanban-column-header">
+                <div class="column-title-box">
+                  <span class="column-dot progress"></span>
+                  <h4>In Progress</h4>
+                </div>
+                <span class="column-count-badge" id="count-progress">0</span>
+              </div>
+              <div class="kanban-cards-wrapper" id="cards-progress"></div>
+            </div>
+
+            <!-- Column 4: Resolved -->
+            <div class="kanban-column" id="col-resolved">
+              <div class="kanban-column-header">
+                <div class="column-title-box">
+                  <span class="column-dot resolved"></span>
+                  <h4>Resolved</h4>
+                </div>
+                <span class="column-count-badge" id="count-resolved">0</span>
+              </div>
+              <div class="kanban-cards-wrapper" id="cards-resolved"></div>
+            </div>
+
+          </div>
+
+        </section>
+
+        <!-- ==========================================
+             PAGE 3: ANALYTICS & INSIGHTS
+             ========================================== -->
+        <section id="analytics-page" class="page-view">
+          
+          <div class="section-header-flex" style="margin-bottom: 1.5rem;">
+            <div>
+              <h3>Campus Analytics & Operations Insights</h3>
+              <p style="font-size: 0.8rem; color: var(--text-muted);">Identify recurring campus hotspots, category breakdowns, and resolution trends</p>
+            </div>
+
+            <div class="filter-controls-group">
+              <select class="select-dropdown" id="analytics-timeframe">
+                <option value="semester">This Semester (Monsoon 2026)</option>
+                <option value="month">Past 30 Days</option>
+                <option value="week">This Week</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="analytics-dashboard-grid">
+            
+            <!-- Donut Chart: Complaint Categories Breakdown -->
+            <div class="chart-card-small">
+              <div class="chart-card-header">
+                <h3>Category Breakdown</h3>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">Total Complaints: 124</span>
+              </div>
+              
+              <div class="chart-svg-container" id="donut-chart-container">
+                <!-- Rendered dynamically by app.js -->
+              </div>
+
+              <div class="donut-legend-box" id="donut-legend">
+                <!-- Rendered dynamically by app.js -->
+              </div>
+            </div>
+
+            <!-- Bar Chart: Campus Hotspots -->
+            <div class="chart-card-large">
+              <div class="chart-card-header">
+                <h3>Campus Hotspots (Highest Issue Count)</h3>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">Top locations requiring maintenance</span>
+              </div>
+
+              <div class="chart-svg-container" id="bar-chart-container">
+                <!-- Rendered dynamically by app.js -->
+              </div>
+            </div>
+
+            <!-- Line Chart: Complaint Volume & Resolution Trends -->
+            <div class="chart-card-full">
+              <div class="chart-card-header">
+                <h3>Semester Complaint Volume vs Resolution Rate</h3>
+                <div style="display: flex; gap: 1rem; font-size: 0.8rem; font-weight: 600;">
+                  <span style="color: var(--primary);">● Incoming Complaints</span>
+                  <span style="color: var(--success-green);">● Resolved Issues</span>
+                </div>
+              </div>
+
+              <div class="chart-svg-container" id="line-chart-container">
+                <!-- Rendered dynamically by app.js -->
+              </div>
+            </div>
+
+          </div>
+
+        </section>
+
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- ==========================================================================
+       SMART COMPLAINT SUBMISSION MODAL
+       ========================================================================== -->
+  <div class="modal-overlay" id="submission-modal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div>
+          <h3>Report Campus Issue</h3>
+          <span style="font-size: 0.78rem; color: var(--text-muted);">AI Auto-categorizes and checks for duplicate reports in real-time</span>
+        </div>
+        <button class="close-modal-btn" onclick="closeNewIssueModal()">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <form id="complaint-form" onsubmit="handleFormSubmission(event)">
+          
+          <div class="form-grid">
+            
+            <!-- Title Input with AI Auto-Categorization & Duplicate Listener -->
+            <div class="form-group full-width">
+              <label for="form-title">Complaint Title / Subject *</label>
+              <input type="text" class="form-control" id="form-title" placeholder="e.g. Wi-Fi router not working in Hostel Block A room 302" required oninput="triggerSmartAIAssist()">
+            </div>
+
+            <!-- AI Auto-Categorization Pill Banner -->
+            <div class="form-group full-width" id="ai-prediction-box" style="display: none;">
+              <div class="ai-prediction-banner">
+                <div class="ai-prediction-info">
+                  <span class="ai-sparkle-icon">✨</span>
+                  <span>AI Auto-Detected Department: <strong id="ai-predicted-dept-name">IT & Network Infra</strong></span>
+                </div>
+                <span class="ai-confidence-pill" id="ai-confidence-score">98% Match</span>
+              </div>
+            </div>
+
+            <!-- Category Select Dropdown -->
+            <div class="form-group">
+              <label for="form-category">Category / Department *</label>
+              <select class="form-control" id="form-category" required>
+                <option value="" disabled selected>Select Department</option>
+                <option value="IT/Wi-Fi">IT / Wi-Fi Network</option>
+                <option value="Electrical">Electrical & Lighting</option>
+                <option value="Plumbing">Plumbing & Washrooms</option>
+                <option value="Infrastructure">Building & Furniture</option>
+                <option value="Transport">Campus Bus / Transport</option>
+              </select>
+            </div>
+
+            <!-- Location Dropdown -->
+            <div class="form-group">
+              <label for="form-location">Campus Location *</label>
+              <select class="form-control" id="form-location" required onchange="triggerSmartAIAssist()">
+                <option value="" disabled selected>Select Location</option>
+                <option value="Hostel Block A">Hostel Block A</option>
+                <option value="Hostel Block B">Hostel Block B</option>
+                <option value="Hostel Block C">Hostel Block C</option>
+                <option value="Central Lab 2">Central Computer Lab 2</option>
+                <option value="Library 2nd Floor">Central Library 2nd Floor</option>
+                <option value="Main Auditorium">Main Auditorium</option>
+                <option value="Cafeteria & Mess">Cafeteria & Mess</option>
+                <option value="B.Tech Mech Block">B.Tech Mech Workshop</option>
+              </select>
+            </div>
+
+            <!-- Urgency Radio / Select -->
+            <div class="form-group">
+              <label for="form-urgency">Urgency Level *</label>
+              <select class="form-control" id="form-urgency" required>
+                <option value="Low">Low (General Maintenance)</option>
+                <option value="Medium" selected>Medium (Standard Issue)</option>
+                <option value="Urgent">Urgent (Safety / Critical)</option>
+              </select>
+            </div>
+
+            <!-- Room / Specific Area -->
+            <div class="form-group">
+              <label for="form-room">Room / Door No. (Optional)</label>
+              <input type="text" class="form-control" id="form-room" placeholder="e.g. Room 304, Lab Bench 12">
+            </div>
+
+            <!-- Description Text Area -->
+            <div class="form-group full-width">
+              <label for="form-desc">Detailed Description *</label>
+              <textarea class="form-control" id="form-desc" placeholder="Describe the issue clearly (e.g. power outlet sparking, no internet since morning...)" required oninput="triggerSmartAIAssist()"></textarea>
+            </div>
+
+            <!-- Drag & Drop Media Photo Upload -->
+            <div class="form-group full-width">
+              <label>Upload Photo of Issue (Optional)</label>
+              <div class="drag-drop-area" id="drop-zone" onclick="document.getElementById('photo-input').click()">
+                <div class="upload-icon-circle">📷</div>
+                <div class="drag-drop-text">
+                  <strong>Click to upload</strong> or drag and drop photo here
+                  <div style="font-size: 0.75rem; margin-top: 0.2rem;">PNG, JPG or WEBP up to 5MB</div>
+                </div>
+                <input type="file" id="photo-input" accept="image/*" style="display: none;" onchange="handleFileSelect(event)">
+              </div>
+              <div class="image-preview-strip" id="image-preview-container"></div>
+            </div>
+
+          </div>
+
+          <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 0.75rem;">
+            <button type="button" class="btn-secondary-submit" onclick="closeNewIssueModal()">Cancel</button>
+            <button type="submit" class="btn-cta-primary">
+              Submit Complaint →
+            </button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       STUDENT PERSONAL DETAILS & DIGITAL ID MODAL
+       ========================================================================== -->
+  <div class="modal-overlay" id="student-profile-modal">
+    <div class="modal-dialog" style="max-width: 720px;">
+      <div class="modal-header">
+        <div>
+          <h3>Student Profile & Campus Digital ID</h3>
+          <span style="font-size: 0.78rem; color: var(--text-muted);">Verified Academic & Hostel Residency Record</span>
+        </div>
+        <button class="close-modal-btn" onclick="closeStudentProfileModal()">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="profile-modal-grid">
+          
+          <!-- Left: Digital ID Card Badge -->
+          <div class="digital-id-card">
+            <div class="id-card-top">
+              <div class="id-college-logo">🎓 B.Tech Engineering Campus</div>
+              <div class="id-chip-tag">OFFICIAL STUDENT ID</div>
+            </div>
+            
+            <div class="id-card-center">
+              <div class="id-avatar-circle">RS</div>
+              <div class="id-student-name">Rahul Sharma</div>
+              <div class="id-student-roll">ID: 22B91A0584</div>
+            </div>
+
+            <div class="id-card-details">
+              <div class="id-row"><span>Branch:</span> <strong>Comp. Sci. & Engg (CSE)</strong></div>
+              <div class="id-row"><span>Academic Yr:</span> <strong>3rd Year (Semester V)</strong></div>
+              <div class="id-row"><span>Residency:</span> <strong>Hostel Block B (Room 304)</strong></div>
+              <div class="id-row"><span>Blood Group:</span> <strong>O+ Positive</strong></div>
+            </div>
+
+            <div class="id-card-footer">
+              <span class="id-barcode-mock">||||| ||| |||||| ||| |||||||</span>
+              <span class="id-valid-text">Valid Thru: June 2027</span>
+            </div>
+          </div>
+
+          <!-- Right: Comprehensive Personal & Complaint Details -->
+          <div class="profile-info-section">
+            <h4 class="profile-section-heading">Contact & Academic Info</h4>
+            <div class="info-list-group">
+              <div class="info-item-box">
+                <span class="info-lbl">University Email</span>
+                <span class="info-val">rahul.sharma@campus.edu.in</span>
+              </div>
+              <div class="info-item-box">
+                <span class="info-lbl">Mobile Contact</span>
+                <span class="info-val">+91 98765 43210</span>
+              </div>
+              <div class="info-item-box">
+                <span class="info-lbl">Semester Attendance</span>
+                <span class="info-val text-success">88.4% (Regular & Eligible)</span>
+              </div>
+              <div class="info-item-box">
+                <span class="info-lbl">Hostel Supervisor / Warden</span>
+                <span class="info-val">Dr. M. K. Rao (+91 94401 12345)</span>
+              </div>
+            </div>
+
+            <h4 class="profile-section-heading" style="margin-top: 1.25rem;">Complaint Activity Record</h4>
+            <div class="info-stats-row">
+              <div class="stat-badge-box">
+                <span class="num text-primary">5</span>
+                <span class="lbl">Total Logged</span>
+              </div>
+              <div class="stat-badge-box">
+                <span class="num text-success">3</span>
+                <span class="lbl">Resolved</span>
+              </div>
+              <div class="stat-badge-box">
+                <span class="num text-warning">2</span>
+                <span class="lbl">In Progress</span>
+              </div>
+              <div class="stat-badge-box">
+                <span class="num">14</span>
+                <span class="lbl">Upvotes Given</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       SMART DUPLICATE WARNING ALERT POPUP MODAL
+       ========================================================================== -->
+  <div class="duplicate-alert-overlay" id="duplicate-alert-overlay">
+    <div class="duplicate-alert-card">
+      <div class="alert-warning-icon">⚠️</div>
+      <h3>Similar Complaint Reported!</h3>
+      <p style="font-size: 0.88rem; color: var(--text-muted); margin-top: 0.25rem;">
+        Wait! <strong id="dup-count-text">3 similar complaints</strong> about this exact issue have already been logged by campus residents.
+      </p>
+
+      <div class="duplicate-issue-box">
+        <div class="dup-title" id="dup-issue-title">Wi-Fi Router Power Outage in Hostel Block A</div>
+        <div class="dup-meta">
+          📍 <span id="dup-issue-loc">Hostel Block A</span> • 🕒 Reported 25 mins ago • 👍 <span id="dup-issue-upvotes">8</span> Upvotes
+        </div>
+      </div>
+
+      <div class="alert-actions-group">
+        <button class="btn-upvote-action" onclick="upvoteDuplicateIssue()">
+          👍 Upvote Existing Issue (+1) & Subscribe to Updates
+        </button>
+        <button class="btn-secondary-submit" onclick="bypassDuplicateAndSubmit()">
+          Submit New Complaint Anyway
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-notification" id="toast-element">
+    <span id="toast-message">Notification message here</span>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
